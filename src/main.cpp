@@ -14,7 +14,7 @@ ez::Drive chassis(
     {1, -2, 3},  // Right Chassis Ports (negative port will reverse it!)
 
     4,      // IMU Port
-    3.25,  // Wheel Diameter
+    5.5 ,  // Wheel Diameter
     450);   // Wheel RPM
 
 
@@ -44,7 +44,7 @@ void initialize() {
 
   // Autonomous Selector using LLEMU
   ez::as::auton_selector.autons_add({
-      //Auton("Red positive side auton.\n\nStart near red alliance stake.\n\n'safe side' auto", pos_side_red),
+      Auton("Red positive side auton.\n\nStart near red alliance stake.\n\n'safe side' auto", pos_side_red),
       Auton("Example Drive\n\nDrive forward and come back.", drive_example),
       Auton("Example Turn\n\nTurn 3 times.", turn_example),
       //Auton("Drive and Turn\n\nDrive forward, turn, come back. ", drive_and_turn),
@@ -200,7 +200,12 @@ void opcontrol() {
     // Put more user control code here!
     // . . .
     
-  
+    if (master.get_digital(DIGITAL_L1)) {
+      chassis.drive_sensor_reset();
+    } 
+    printf("Left: %.2f   Right: %.2f\n", chassis.drive_sensor_left(), chassis.drive_sensor_right());
+
+
 
     // LADY BROWN MACRO
     double ldbcurrentpos = (ldbrotation.get_angle()/100.0); //CENTI DEGREES SO WATCH OUT FOR THE /100

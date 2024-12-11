@@ -1,5 +1,6 @@
 #include "main.h"
 #include <cmath>
+#include "subsystems.hpp"
 
 /////
 // For installation, upgrading, documentations, and tutorials, check out our website!
@@ -16,7 +17,7 @@ const int SWING_SPEED = 90;
 ///
 void default_constants() {
   chassis.pid_heading_constants_set(11, 0, 20);
-  chassis.pid_drive_constants_set(1.625, 0.2, 30); // def 3 0 20 // 10 0.2 100
+  chassis.pid_drive_constants_set(2.7, 0, 25); // def 3 0 20 // 10 0.2 100
   chassis.pid_turn_constants_set(5, 0, 30);
   chassis.pid_swing_constants_set(10, 0, 65);
 
@@ -40,7 +41,8 @@ void drive_example() {
   // The third parameter is a boolean (true or false) for enabling/disabling a slew at the start of drive motions
   // for slew, only enable it when the drive distance is greater than the slew distance + a few inches
 
-  chassis.pid_drive_set(24_in, DRIVE_SPEED, true);
+  chassis.drive_sensor_reset();
+  chassis.pid_drive_set(48_in, DRIVE_SPEED, false);
   chassis.pid_wait();
 }
 
@@ -219,11 +221,6 @@ void interfered_example() {
 
 
 
-
-
-
-
-
 //pos side red nonrush solo awp (2 on mogo 1 on alliance)
 void pos_side_red() {
   //default configuration + definitions
@@ -237,13 +234,13 @@ void pos_side_red() {
 
   // SCORE RING ON RED ALLIANCE STAKE
   chassis.pid_drive_set(6_in, DRIVE_SPEED);
-  chassis.pid_wait();
+  chassis.pid_wait_quick_chain();
   chassis.pid_turn_set(20_deg, TURN_SPEED);
-  chassis.pid_wait();
-  chassis.pid_drive_set(-7_in, DRIVE_SPEED);
-  chassis.pid_wait();
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(-12_in, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
   chassis.pid_turn_relative_set(20_deg, TURN_SPEED);
-  chassis.pid_wait();
+  chassis.pid_wait_quick_chain();
   chassis.pid_turn_relative_set(-20_deg, TURN_SPEED);
   /*pros::delay(1000);
   intake.move(-127);
