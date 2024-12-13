@@ -17,7 +17,7 @@ const int SWING_SPEED = 90;
 ///
 void default_constants() {
   chassis.pid_heading_constants_set(11, 0, 20);
-  chassis.pid_drive_constants_set(2.7, 0, 25); // def 3 0 20 // 10 0.2 100
+  chassis.pid_drive_constants_set(2.475, 0, 25);
   chassis.pid_turn_constants_set(5, 0, 30);
   chassis.pid_swing_constants_set(10, 0, 65);
 
@@ -42,7 +42,7 @@ void drive_example() {
   // for slew, only enable it when the drive distance is greater than the slew distance + a few inches
 
   chassis.drive_sensor_reset();
-  chassis.pid_drive_set(48_in, DRIVE_SPEED, false);
+  chassis.pid_drive_set(24_in, DRIVE_SPEED, false);
   chassis.pid_wait();
 }
 
@@ -222,7 +222,7 @@ void interfered_example() {
 
 
 //pos side red nonrush solo awp (2 on mogo 1 on alliance)
-void pos_side_red() {
+/*void pos_side_red() {
   //default configuration + definitions
   ez::Piston clamp(8);
   ez::Piston doinker(1);
@@ -277,6 +277,5 @@ void pos_side_red() {
   chassis.pid_turn_relative_set(-145_deg, TURN_SPEED);
   chassis.pid_wait();
   chassis.pid_drive_set(12_in, DRIVE_SPEED);
-  
+}
 */
-  }

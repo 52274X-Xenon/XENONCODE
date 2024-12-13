@@ -1,6 +1,5 @@
 #include "main.h"
 #include <cmath>
-#include "subsystems.hpp"
 
 /////
 // For installation, upgrading, documentations, and tutorials, check out our website!
@@ -10,11 +9,11 @@
 // Chassis constructor
 ez::Drive chassis(
     // These are your drive motors, the first motor is used for sensing!
-    {-7, -8, 9},     // Left Chassis Ports (negative port will reverse it!)
+    {-8, -9, 10},     // Left Chassis Ports (negative port will reverse it!)
     {1, -2, 3},  // Right Chassis Ports (negative port will reverse it!)
 
     4,      // IMU Port
-    5.5 ,  // Wheel Diameter
+    5.75 ,  // Wheel Diameter
     450);   // Wheel RPM
 
 
@@ -44,17 +43,16 @@ void initialize() {
 
   // Autonomous Selector using LLEMU
   ez::as::auton_selector.autons_add({
-      Auton("Red positive side auton.\n\nStart near red alliance stake.\n\n'safe side' auto", pos_side_red),
       Auton("Example Drive\n\nDrive forward and come back.", drive_example),
       Auton("Example Turn\n\nTurn 3 times.", turn_example),
-      //Auton("Drive and Turn\n\nDrive forward, turn, come back. ", drive_and_turn),
-      //Auton("Drive and Turn\n\nSlow down during drive.", wait_until_change_speed),
-      //Auton("Swing Example\n\nSwing in an 'S' curve", swing_example),
-      //Auton("Motion Chaining\n\nDrive forward, turn, and come back, but blend everything together :D", motion_chaining),
-      //Auton("Combine all 3 movements", combining_movements),
-      //Auton("Interference\n\nAfter driving forward, robot performs differently if interfered or not.", interfered_example),
+      Auton("Drive and Turn\n\nDrive forward, turn, come back. ", drive_and_turn),
+      Auton("Drive and Turn\n\nSlow down during drive.", wait_until_change_speed),
+      Auton("Swing Example\n\nSwing in an 'S' curve", swing_example),
+      Auton("Motion Chaining\n\nDrive forward, turn, and come back, but blend everything together :D", motion_chaining),
+      Auton("Combine all 3 movements", combining_movements),
+      Auton("Interference\n\nAfter driving forward, robot performs differently if interfered or not.", interfered_example),
   });
-  //commented out because we dont need those autons for now
+
 
 
   // Initialize chassis and auton selector
@@ -66,7 +64,7 @@ void initialize() {
 
 // LADY BROWN PID
 
-  double ladyBrownPID(double error = 0, double kP=-0, double kI=0, double kD=0, double totalError = 0, double prevError = 0, double integralThreshold=30, double maxI=500) {
+  /*double ladyBrownPID(double error = 0, double kP=-0, double kI=0, double kD=0, double totalError = 0, double prevError = 0, double integralThreshold=30, double maxI=500) {
       // calculate integral
       if (abs(error) < integralThreshold) {
           totalError += error;
@@ -94,7 +92,7 @@ void initialize() {
       }
 
       return speed;
-  }
+  }*/
 
 /**
  * Runs while the robot is in the disabled state of Field Management System or
@@ -154,10 +152,12 @@ void autonomous() {
 void opcontrol() {
   // This is preference to what you like to drive on
   pros::motor_brake_mode_e_t driver_preference_brake = MOTOR_BRAKE_COAST;
+  /*pros::motor_brake_mode_e_t ladybrown_default_brake = MOTOR_BRAKE_HOLD;
+  ladybrown.set_brake_mode(ladybrown_default_brake);*/
   chassis.drive_brake_set(driver_preference_brake);
 
 //DEFINE PISTONS AND SENSORS + LDB BRAKE MODE AND MORE
-  ez::Piston clamp(8);
+  /*ez::Piston clamp(8);
   ez::Piston doinker(6);
   ez::Piston intlift(7);
   ez::Piston csortpist(3);
@@ -167,7 +167,7 @@ void opcontrol() {
   bool ldbPID = false; // Lady Brown PID is off by default
   csortoptical.set_led_pwm(100); // Turn on light with 100% intensity
   double csorthue_val = csortoptical.get_hue(); // variable returns optical sensor's detected hue value
-  
+  */
 
 
   while (true) {
@@ -199,13 +199,7 @@ void opcontrol() {
     // . . .
     // Put more user control code here!
     // . . .
-    
-    if (master.get_digital(DIGITAL_L1)) {
-      chassis.drive_sensor_reset();
-    } 
-    printf("Left: %.2f   Right: %.2f\n", chassis.drive_sensor_left(), chassis.drive_sensor_right());
-
-
+    /*
 
     // LADY BROWN MACRO
     double ldbcurrentpos = (ldbrotation.get_angle()/100.0); //CENTI DEGREES SO WATCH OUT FOR THE /100
