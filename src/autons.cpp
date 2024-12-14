@@ -17,8 +17,8 @@ const int SWING_SPEED = 90;
 ///
 void default_constants() {
   chassis.pid_heading_constants_set(11, 0, 20);
-  chassis.pid_drive_constants_set(2.475, 0, 25);
-  chassis.pid_turn_constants_set(5, 0, 30);
+  chassis.pid_drive_constants_set(8, 0, 50);
+  chassis.pid_turn_constants_set(5.3, 0, 45);
   chassis.pid_swing_constants_set(10, 0, 65);
 
   chassis.pid_turn_exit_condition_set(80_ms, 3_deg, 250_ms, 7_deg, 500_ms, 500_ms);
@@ -54,12 +54,6 @@ void turn_example() {
   // The second parameter is max speed the robot will drive at
 
   chassis.pid_turn_set(90_deg, TURN_SPEED);
-  chassis.pid_wait();
-
-  chassis.pid_turn_set(45_deg, TURN_SPEED);
-  chassis.pid_wait();
-
-  chassis.pid_turn_set(0_deg, TURN_SPEED);
   chassis.pid_wait();
 }
 
@@ -222,60 +216,386 @@ void interfered_example() {
 
 
 //pos side red nonrush solo awp (2 on mogo 1 on alliance)
-/*void pos_side_red() {
+void solo_awp_red() {
   //default configuration + definitions
   ez::Piston clamp(8);
-  ez::Piston doinker(1);
+  ez::Piston rightdoinker(6);
   ez::Piston intlift(7);
   chassis.drive_imu_reset();
   chassis.drive_sensor_reset();
   chassis.drive_brake_set(MOTOR_BRAKE_HOLD);
   ladybrown.set_brake_mode(MOTOR_BRAKE_HOLD);
 
-  // SCORE RING ON RED ALLIANCE STAKE
-  chassis.pid_drive_set(6_in, DRIVE_SPEED);
+  // SCORE RED RING 1 ON RED ALLIANCE STAKE
+  chassis.pid_drive_set(-15.5, DRIVE_SPEED);
   chassis.pid_wait_quick_chain();
-  chassis.pid_turn_set(20_deg, TURN_SPEED);
+  chassis.pid_drive_set(1.75, DRIVE_SPEED);
   chassis.pid_wait_quick_chain();
-  chassis.pid_drive_set(-12_in, DRIVE_SPEED);
+  chassis.pid_turn_set(-60, TURN_SPEED);
   chassis.pid_wait_quick_chain();
-  chassis.pid_turn_relative_set(20_deg, TURN_SPEED);
+  chassis.pid_drive_set(-3, DRIVE_SPEED);
   chassis.pid_wait_quick_chain();
-  chassis.pid_turn_relative_set(-20_deg, TURN_SPEED);
-  /*pros::delay(1000);
+  chassis.pid_turn_set(-65, 80);
+  chassis.pid_wait_quick_chain();
+  pros::delay(200);
   intake.move(-127);
-
-  // CLAMP MOGO
-  /*pros::delay(300);
+  pros::delay(500);
   intake.move(0);
-  chassis.pid_drive_set(20_in, DRIVE_SPEED);
+
+  // GRAB SAFE MOBILE GOAL
+  chassis.pid_turn_set(-50, TURN_SPEED);
   chassis.pid_wait_quick_chain();
-  chassis.pid_turn_set(195_deg, TURN_SPEED);
+  chassis.pid_drive_set(20, DRIVE_SPEED);
   chassis.pid_wait_quick_chain();
-  chassis.pid_drive_set(-10.5_in, DRIVE_SPEED);
-  chassis.pid_wait();
-  chassis.pid_drive_set(-3_in, DRIVE_SPEED);
+  chassis.pid_turn_set(103, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(-8, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  pros::delay(300);
+  clamp.set(true);
   pros::delay(100);
+
+  // SCORE RED RING 2 ON MOBILE GOAL
+  chassis.pid_turn_set(138, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  intlift.set(true);
+  intake.move(-127);
+  chassis.pid_drive_set(16.75, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  pros::delay(300);
+  intlift.set(false); 
+  pros::delay(500);
+  chassis.pid_drive_set(-10, 100);
+  chassis.pid_wait_quick_chain();
+
+  // SCORE RED RING 3 ON MOBILE GOAL
+  chassis.pid_turn_set(-22, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(26, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  pros::delay(50);
+  chassis.pid_drive_set(5, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+
+  // TOUCH BAR
+  chassis.pid_drive_set(-12, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_turn_set(180, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(25, DRIVE_SPEED);
+  
+}
+
+//pos side red nonrush solo awp (2 on mogo 1 on alliance)
+void solo_awp_blue() {
+  //default configuration + definitions
+  ez::Piston clamp(8);
+  ez::Piston rightdoinker(6);
+  ez::Piston intlift(7);
+  chassis.drive_imu_reset();
+  chassis.drive_sensor_reset();
+  chassis.drive_brake_set(MOTOR_BRAKE_HOLD);
+  ladybrown.set_brake_mode(MOTOR_BRAKE_HOLD);
+
+  // SCORE RED RING 1 ON RED ALLIANCE STAKE
+  chassis.pid_drive_set(-15.5, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(1.75, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_turn_set(56, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(-1.5, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_turn_set(65, 80);
+  chassis.pid_wait_quick_chain();
+  pros::delay(200);
+  intake.move(-127);
+  pros::delay(500);
+  intake.move(0);
+
+  // GRAB SAFE MOBILE GOAL
+  chassis.pid_turn_set(50, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(20, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  
+  chassis.pid_turn_set(-103, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(-8, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  pros::delay(300);
+  clamp.set(true);
+  pros::delay(100);
+  
+  // SCORE RED RING 2 ON MOBILE GOAL
+  chassis.pid_turn_set(-138, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  intlift.set(true);
+  intake.move(-127);
+  chassis.pid_drive_set(16, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  pros::delay(300);
+  intlift.set(false); 
+  pros::delay(700);
+  chassis.pid_drive_set(-10, 80);
+  chassis.pid_wait_quick_chain();
+
+  // SCORE RED RING 3 ON MOBILE GOAL
+  chassis.pid_turn_set(22, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(25, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  pros::delay(50);
+  chassis.pid_drive_set(5, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  pros::delay(350);
+  
+  // TOUCH BAR
+  chassis.pid_drive_set(-12, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_turn_set(-190, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(19, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(6, 90);
+  
+}
+
+///
+// RUSH AUTONOMOUS RED
+///
+void rush_auto_red() {
+  //Initializing pneumatics, sensors, and etc.
+  ez::Piston clamp(8);
+  ez::Piston rightdoinker(6);
+  ez::Piston intlift(7);
+  chassis.drive_imu_reset();
+  chassis.drive_sensor_reset();
+  chassis.drive_brake_set(MOTOR_BRAKE_HOLD);
+  ladybrown.set_brake_mode(MOTOR_BRAKE_HOLD);
+
+  //Side: Red Positive-Corner Quadrant
+  //Objectives: Steals middle mobile goal, and scores 1 rings on each goal
+  //Starting position: On starting line between mobile goal and ring stake
+  //Ending position: Near autonomous line, near ladder, facing blue positive corner
+  //Consistency: 6-9 out of 10
+  //Relative Programming/Logic Complexity: Easy
+  //Total points: 6 points (not including autonomous bonus or AWP)
+
+
+  // RUSH TOWARDS MIDDLE MOBILE GOAL
+  chassis.pid_drive_set(32, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  pros::delay(100);
+  rightdoinker.set(true);
+  chassis.pid_turn_set(5, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(7.5, DRIVE_SPEED);
+  pros::delay(600);
+  rightdoinker.set(false);
+
+  // DRIVE BACK AND CLAMP 
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(-36.5, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_turn_set(30, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  pros::delay(400);
+  chassis.pid_drive_set(-6, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_turn_set(205, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(-22, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  pros::delay(300);
+  clamp.set(true);
+  pros::delay(50);
+  chassis.pid_drive_set(-2, DRIVE_SPEED);
+
+  // SCORE PRELOAD ON MOGO 1
+  chassis.pid_drive_set(8, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  intake.move(-127);
+  pros::delay(400);
+  intake.move(0);
+  clamp.set(false);
+
+  // DRIVE TO AND CLAMP MOGO 2
+  chassis.pid_drive_set(4, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_turn_set(160, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(-27, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  pros::delay(400);
   clamp.set(true);
 
-
-  /*chassis.pid_turn_relative_set(28_deg, TURN_SPEED);
+  // INTAKE RED RING ONTO MOGO 2
+  chassis.pid_turn_set(230, TURN_SPEED);
   intlift.set(true);
-  chassis.pid_wait();
-  chassis.pid_drive_set(17_in, DRIVE_SPEED);
-  chassis.pid_wait();
-  intlift.set(false);
-  pros::delay(75);
+  chassis.pid_wait_quick_chain();
   intake.move(-127);
-  chassis.pid_drive_set(1.5_in, DRIVE_SPEED);
-  pros::delay(750);
-  chassis.pid_wait();
-  chassis.pid_drive_set(-15_in, DRIVE_SPEED);
+  chassis.pid_drive_set(22, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  intlift.set(false);
+  pros::delay(300);
+  chassis.pid_drive_set(-8, DRIVE_SPEED);
   chassis.pid_wait_quick_chain();
 
+  // GO TO AUTONOMOUS LINE
+  chassis.pid_turn_set(30, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(25, DRIVE_SPEED);
+  intake.move(0);
 
-  chassis.pid_turn_relative_set(-145_deg, TURN_SPEED);
-  chassis.pid_wait();
-  chassis.pid_drive_set(12_in, DRIVE_SPEED);
 }
-*/
+
+///
+// RUSH AUTONOMOUS BLUE
+///
+void rush_auto_blue() {
+  //Initializing pneumatics, sensors, and etc.
+  ez::Piston clamp(8);
+  ez::Piston leftdoinker(5);
+  ez::Piston intlift(7);
+  chassis.drive_imu_reset();
+  chassis.drive_sensor_reset();
+  chassis.drive_brake_set(MOTOR_BRAKE_HOLD);
+  ladybrown.set_brake_mode(MOTOR_BRAKE_HOLD);
+
+  //Side: Red Positive-Corner Quadrant
+  //Objectives: Steals middle mobile goal, and scores 1 rings on each goal
+  //Starting position: On starting line between mobile goal and ring stake
+  //Ending position: Near autonomous line, near ladder, facing blue positive corner
+  //Consistency: 6-9 out of 10
+  //Relative Programming/Logic Complexity: Easy
+  //Total points: 6 points (not including autonomous bonus or AWP)
+
+
+  // RUSH TOWARDS MIDDLE MOBILE GOAL
+  chassis.pid_drive_set(32, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  pros::delay(100);
+  leftdoinker.set(true);
+  chassis.pid_turn_set(-5, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(7.5, DRIVE_SPEED);
+  pros::delay(600);
+  leftdoinker.set(false);
+
+  // DRIVE BACK AND CLAMP 
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(-36.5, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_turn_set(-30, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  pros::delay(400);
+  chassis.pid_drive_set(-6, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_turn_set(-205, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(-22, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  pros::delay(300);
+  clamp.set(true);
+  pros::delay(50);
+  chassis.pid_drive_set(-2, DRIVE_SPEED);
+
+  // SCORE PRELOAD ON MOGO 1
+  chassis.pid_drive_set(8, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  intake.move(-127);
+  pros::delay(400);
+  intake.move(0);
+  clamp.set(false);
+
+  // DRIVE TO AND CLAMP MOGO 2
+  chassis.pid_drive_set(4, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_turn_set(-160, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(-27, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  pros::delay(400);
+  clamp.set(true);
+
+  // INTAKE RED RING ONTO MOGO 2
+  chassis.pid_turn_set(-230, TURN_SPEED);
+  intlift.set(true);
+  chassis.pid_wait_quick_chain();
+  intake.move(-127);
+  chassis.pid_drive_set(22, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  intlift.set(false);
+  pros::delay(300);
+  chassis.pid_drive_set(-8, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+
+  // GO TO AUTONOMOUS LINE
+  chassis.pid_turn_set(-30, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(25, DRIVE_SPEED);
+  intake.move(0);
+
+}
+
+///
+// XENON SKILLS AUTONOMOUS
+///
+void skills_auto() {
+  //default configuration + definitions
+  ez::Piston clamp(8);
+  ez::Piston intlift(7);
+  chassis.drive_imu_reset();
+  chassis.drive_sensor_reset();
+  chassis.drive_brake_set(MOTOR_BRAKE_HOLD);
+  ladybrown.set_brake_mode(MOTOR_BRAKE_HOLD);
+
+  // RED ALLIANCE STAKE
+  intake.move(-127);
+  pros::delay(500);
+  intake.move(0);
+
+  // GRAB MOGO 1
+  chassis.pid_drive_set(7, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_turn_set(-90, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(-17, DRIVE_SPEED);
+  pros::delay(500);
+  clamp.set(true);
+  pros::delay(100);
+  
+  // FILL MOGO 1
+  chassis.pid_wait();
+  chassis.pid_drive_set(-2, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_turn_set(0, DRIVE_SPEED);
+  intake.move(-127);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(15, DRIVE_SPEED);  
+  chassis.pid_wait_quick_chain();
+  chassis.pid_turn_set(52, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(42, DRIVE_SPEED);  
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(-6, 80);  
+  chassis.pid_wait_quick_chain();
+  chassis.pid_turn_set(-163.5, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  pros::delay(300);
+  chassis.pid_drive_set(13, 65);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_turn_set(-180, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(37, 35);
+  chassis.pid_wait_quick_chain();
+  pros::delay(300);
+  chassis.pid_drive_set(-30, DRIVE_SPEED);
+  chassis.pid_turn_set(52, TURN_SPEED);
+
+
+
+
+
+}

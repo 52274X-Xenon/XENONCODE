@@ -9,11 +9,11 @@
 // Chassis constructor
 ez::Drive chassis(
     // These are your drive motors, the first motor is used for sensing!
-    {-8, -9, 10},     // Left Chassis Ports (negative port will reverse it!)
+    {-8, 9, -10},     // Left Chassis Ports (negative port will reverse it!)
     {1, -2, 3},  // Right Chassis Ports (negative port will reverse it!)
 
     4,      // IMU Port
-    5.75 ,  // Wheel Diameter
+    3.25 ,  // Wheel Diameter
     450);   // Wheel RPM
 
 
@@ -43,6 +43,11 @@ void initialize() {
 
   // Autonomous Selector using LLEMU
   ez::as::auton_selector.autons_add({
+      Auton("SKILLS", skills_auto),
+      Auton("solo awp blue", solo_awp_blue),
+      Auton("solo awp red", solo_awp_red),
+      Auton("rush red", rush_auto_red),
+      Auton("rush blue", rush_auto_blue),
       Auton("Example Drive\n\nDrive forward and come back.", drive_example),
       Auton("Example Turn\n\nTurn 3 times.", turn_example),
       Auton("Drive and Turn\n\nDrive forward, turn, come back. ", drive_and_turn),
@@ -64,7 +69,7 @@ void initialize() {
 
 // LADY BROWN PID
 
-  /*double ladyBrownPID(double error = 0, double kP=-0, double kI=0, double kD=0, double totalError = 0, double prevError = 0, double integralThreshold=30, double maxI=500) {
+  double ladyBrownPID(double error = 0, double kP=-0, double kI=0, double kD=0, double totalError = 0, double prevError = 0, double integralThreshold=30, double maxI=500) {
       // calculate integral
       if (abs(error) < integralThreshold) {
           totalError += error;
@@ -92,7 +97,7 @@ void initialize() {
       }
 
       return speed;
-  }*/
+  }
 
 /**
  * Runs while the robot is in the disabled state of Field Management System or
@@ -157,8 +162,9 @@ void opcontrol() {
   chassis.drive_brake_set(driver_preference_brake);
 
 //DEFINE PISTONS AND SENSORS + LDB BRAKE MODE AND MORE
-  /*ez::Piston clamp(8);
-  ez::Piston doinker(6);
+  ez::Piston clamp(8);
+  ez::Piston rightdoinker(6);
+  ez::Piston leftdoinker(5);
   ez::Piston intlift(7);
   ez::Piston csortpist(3);
   pros::Optical csortoptical(11);
@@ -167,7 +173,7 @@ void opcontrol() {
   bool ldbPID = false; // Lady Brown PID is off by default
   csortoptical.set_led_pwm(100); // Turn on light with 100% intensity
   double csorthue_val = csortoptical.get_hue(); // variable returns optical sensor's detected hue value
-  */
+  
 
 
   while (true) {
@@ -199,12 +205,12 @@ void opcontrol() {
     // . . .
     // Put more user control code here!
     // . . .
-    /*
+    
 
     // LADY BROWN MACRO
     double ldbcurrentpos = (ldbrotation.get_angle()/100.0); //CENTI DEGREES SO WATCH OUT FOR THE /100
-        double ldbcorrectpos1 = 33.56; //loading pos if ldb above loading pos
-        double ldbcorrectpos2 = 50; //loading pos if ldb below loadpos1
+        double ldbcorrectpos1 = -140; //loading pos if ldb above loading pos
+        double ldbcorrectpos2 = 58 //loading pos if ldb below loadpos1
         double lberror1 = (ldbcorrectpos1 - ldbcurrentpos); //Finds position that you want to go to based on how much movement
         double lberror2 = (ldbcorrectpos2 - ldbcurrentpos);
 
@@ -231,12 +237,12 @@ void opcontrol() {
         }
     
       
-        if ((ldbPID == true) && ldbcurrentpos > 35) {
-          ladybrown.move(ladyBrownPID(lberror1, 0.5, 0, 0.35)); //moves to
+        if ((ldbPID == true) && ldbcurrentpos > 35) { // if ladybrown is above loading position
+          ladybrown.move(ladyBrownPID(lberror1, 0.30, 0, 0.15)); // position, kP, kI, kD
 
         }
-        else if ((ldbPID == true) && ldbcurrentpos < 35) {
-          ladybrown.move(ladyBrownPID(lberror2, 0.5, 0, 0.35));
+        else if ((ldbPID == true) && ldbcurrentpos < 35) { // if ladybrown is between zero and loading position
+          ladybrown.move(ladyBrownPID(lberror2, 0.40, 0, 0.15)); // position, kP, kI, kD
         }
       
 
@@ -253,9 +259,9 @@ void opcontrol() {
     }
 
     // PISTON FUNCTIONS
-    doinker.button_toggle(master.get_digital(DIGITAL_Y));
+    rightdoinker.button_toggle(master.get_digital(DIGITAL_Y));
     clamp.button_toggle(master.get_digital(DIGITAL_B));
-    intlift.button_toggle(master.get_digital(DIGITAL_RIGHT));
+    leftdoinker.button_toggle(master.get_digital(DIGITAL_RIGHT));
 
 
     //COLOR SORTER
