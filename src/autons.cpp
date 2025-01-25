@@ -33,13 +33,14 @@ void default_constants() {
   chassis.slew_drive_constants_set(7_in, 80);
 }
 
-  double ldbcurrentpos2 = (ldbrotation.get_angle()/100);
+  /*double ldbcurrentpos2 = (ldbrotation.get_angle()/100);
   double correctloadpos2 = 40.00;
   double correctalliancepos2 = 206.00;
   double correctmogopos2 = 256.00;
   double ldberrorload2 = correctloadpos2 - ldbcurrentpos2;
   double ldberrorall2 = correctalliancepos2 - ldbcurrentpos2;
   double ldberrormogo2 = correctmogopos2 - ldbcurrentpos2;
+  bool ldbPID = false;
   double ladyBrownPID2(double error2 = 0, double kP2=-0, double kI2=0, double kD2=0, double totalError2 = 0, double prevError2 = 0, double integralThreshold2=30, double maxI2=500) {
       // calculate integral
       if (abs(error2) < integralThreshold2) {
@@ -69,7 +70,7 @@ void default_constants() {
 
       return speed2;
   }
-  
+  */
 
 ///
 // Drive Example
@@ -124,10 +125,8 @@ void newredsoloawp() {
   chassis.drive_brake_set(MOTOR_BRAKE_HOLD);
   ladybrown.set_brake_mode(MOTOR_BRAKE_HOLD);
 
-  while(abs(ldberrorall2)>2) {
-    ldberrorall2 = correctalliancepos2 - ldbcurrentpos2;
-    ladybrown.move(ladyBrownPID2(ldberrorall2, 0.5, 0, 0));
-  }
+  //ldbPID = true;
+  //ladybrown.move(ladyBrownPID2(ldberrorall2, 0.5, 0, 0));
 
 }
 
