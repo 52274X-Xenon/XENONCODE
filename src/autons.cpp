@@ -2,6 +2,7 @@
 #include <cmath>
 #include "subsystems.hpp"
 
+
 /////
 // For installation, upgrading, documentations, and tutorials, check out our website!
 // https://ez-robotics.github.io/EZ-Template/
@@ -9,17 +10,17 @@
 
 // Out of 127
 const int DRIVE_SPEED = 127;
-const int TURN_SPEED = 110;
-const int SWING_SPEED = 90;
+const int TURN_SPEED = 127;
+const int SWING_SPEED = 127;
 
 ///
 // Constants
 ///
 void default_constants() {
   chassis.pid_heading_constants_set(11, 0, 20);
-  chassis.pid_drive_constants_set(8, 0, 50);
-  chassis.pid_turn_constants_set(5.3, 0, 45);
-  chassis.pid_swing_constants_set(10, 0, 65);
+  chassis.pid_drive_constants_set(10.85, 0, 50);
+  chassis.pid_turn_constants_set(4.8, 0, 45);
+  chassis.pid_swing_constants_set(1.32, 0, 10);
 
   chassis.pid_turn_exit_condition_set(80_ms, 3_deg, 250_ms, 7_deg, 500_ms, 500_ms);
   chassis.pid_swing_exit_condition_set(80_ms, 3_deg, 250_ms, 7_deg, 500_ms, 500_ms);
@@ -31,6 +32,44 @@ void default_constants() {
 
   chassis.slew_drive_constants_set(7_in, 80);
 }
+
+  double ldbcurrentpos2 = (ldbrotation.get_angle()/100);
+  double correctloadpos2 = 40.00;
+  double correctalliancepos2 = 206.00;
+  double correctmogopos2 = 256.00;
+  double ldberrorload2 = correctloadpos2 - ldbcurrentpos2;
+  double ldberrorall2 = correctalliancepos2 - ldbcurrentpos2;
+  double ldberrormogo2 = correctmogopos2 - ldbcurrentpos2;
+  double ladyBrownPID2(double error2 = 0, double kP2=-0, double kI2=0, double kD2=0, double totalError2 = 0, double prevError2 = 0, double integralThreshold2=30, double maxI2=500) {
+      // calculate integral
+      if (abs(error2) < integralThreshold2) {
+        totalError2 += error2;
+      }
+
+      if (error2 > 0){
+        totalError2 = std::min(totalError2, maxI2);
+      }
+      else {
+        totalError2 = std::max(totalError2, -maxI2);
+      }
+
+    // calculate derivative
+      float derivative2 = error2 - prevError2;
+      prevError2 = error2;
+
+    // calculate output
+      double speed2 = (error2 * kP2) + (totalError2 * kI2) + (derivative2 * kD2);
+
+      if (speed2 > 127){
+        speed2 = 127;
+      }
+      else if (speed2 < -127){
+        speed2 = -127;
+      }
+
+      return speed2;
+  }
+  
 
 ///
 // Drive Example
@@ -57,53 +96,6 @@ void turn_example() {
   chassis.pid_wait();
 }
 
-///
-// Combining Turn + Drive
-///
-void drive_and_turn() {
-  chassis.pid_drive_set(24_in, DRIVE_SPEED, true);
-  chassis.pid_wait();
-
-  chassis.pid_turn_set(45_deg, TURN_SPEED);
-  chassis.pid_wait();
-
-  chassis.pid_turn_set(-45_deg, TURN_SPEED);
-  chassis.pid_wait();
-
-  chassis.pid_turn_set(0_deg, TURN_SPEED);
-  chassis.pid_wait();
-
-  chassis.pid_drive_set(-24_in, DRIVE_SPEED, true);
-  chassis.pid_wait();
-}
-
-///
-// Wait Until and Changing Max Speed
-///
-void wait_until_change_speed() {
-  // pid_wait_until will wait until the robot gets to a desired position
-
-  // When the robot gets to 6 inches slowly, the robot will travel the remaining distance at full speed
-  chassis.pid_drive_set(24_in, 30, true);
-  chassis.pid_wait_until(6_in);
-  chassis.pid_speed_max_set(DRIVE_SPEED);  // After driving 6 inches at 30 speed, the robot will go the remaining distance at DRIVE_SPEED
-  chassis.pid_wait();
-
-  chassis.pid_turn_set(45_deg, TURN_SPEED);
-  chassis.pid_wait();
-
-  chassis.pid_turn_set(-45_deg, TURN_SPEED);
-  chassis.pid_wait();
-
-  chassis.pid_turn_set(0_deg, TURN_SPEED);
-  chassis.pid_wait();
-
-  // When the robot gets to -6 inches slowly, the robot will travel the remaining distance at full speed
-  chassis.pid_drive_set(-24_in, 30, true);
-  chassis.pid_wait_until(-6_in);
-  chassis.pid_speed_max_set(DRIVE_SPEED);  // After driving 6 inches at 30 speed, the robot will go the remaining distance at DRIVE_SPEED
-  chassis.pid_wait();
-}
 
 ///
 // Swing Example
@@ -114,106 +106,30 @@ void swing_example() {
   // The third parameter is the speed of the moving side of the drive
   // The fourth parameter is the speed of the still side of the drive, this allows for wider arcs
 
-  chassis.pid_swing_set(ez::LEFT_SWING, 45_deg, SWING_SPEED, 45);
-  chassis.pid_wait();
-
-  chassis.pid_swing_set(ez::RIGHT_SWING, 0_deg, SWING_SPEED, 45);
-  chassis.pid_wait();
-
-  chassis.pid_swing_set(ez::RIGHT_SWING, 45_deg, SWING_SPEED, 45);
-  chassis.pid_wait();
-
-  chassis.pid_swing_set(ez::LEFT_SWING, 0_deg, SWING_SPEED, 45);
-  chassis.pid_wait();
-}
-
-///
-// Motion Chaining
-///
-void motion_chaining() {
-  // Motion chaining is where motions all try to blend together instead of individual movements.
-  // This works by exiting while the robot is still moving a little bit.
-  // To use this, replace pid_wait with pid_wait_quick_chain.
-  chassis.pid_drive_set(24_in, DRIVE_SPEED, true);
-  chassis.pid_wait();
-
-  chassis.pid_turn_set(45_deg, TURN_SPEED);
+  chassis.pid_swing_set(ez::LEFT_SWING, 90, SWING_SPEED, 50);
   chassis.pid_wait_quick_chain();
-
-  chassis.pid_turn_set(-45_deg, TURN_SPEED);
-  chassis.pid_wait_quick_chain();
-
-  chassis.pid_turn_set(0_deg, TURN_SPEED);
-  chassis.pid_wait();
-
-  // Your final motion should still be a normal pid_wait
-  chassis.pid_drive_set(-24_in, DRIVE_SPEED, true);
-  chassis.pid_wait();
-}
-
-///
-// Auto that tests everything
-///
-void combining_movements() {
-  chassis.pid_drive_set(24_in, DRIVE_SPEED, true);
-  chassis.pid_wait();
-
-  chassis.pid_turn_set(45_deg, TURN_SPEED);
-  chassis.pid_wait();
-
-  chassis.pid_swing_set(ez::RIGHT_SWING, -45_deg, SWING_SPEED, 45);
-  chassis.pid_wait();
-
-  chassis.pid_turn_set(0_deg, TURN_SPEED);
-  chassis.pid_wait();
-
-  chassis.pid_drive_set(-24_in, DRIVE_SPEED, true);
-  chassis.pid_wait();
-}
-
-///
-// Interference example
-///
-void tug(int attempts) {
-  for (int i = 0; i < attempts - 1; i++) {
-    // Attempt to drive backward
-    printf("i - %i", i);
-    chassis.pid_drive_set(-12_in, 127);
-    chassis.pid_wait();
-
-    // If failsafed...
-    if (chassis.interfered) {
-      chassis.drive_sensor_reset();
-      chassis.pid_drive_set(-2_in, 20);
-      pros::delay(1000);
-    }
-    // If the robot successfully drove back, return
-    else {
-      return;
-    }
-  }
-}
-
-// If there is no interference, the robot will drive forward and turn 90 degrees.
-// If interfered, the robot will drive forward and then attempt to drive backward.
-void interfered_example() {
-  chassis.pid_drive_set(24_in, DRIVE_SPEED, true);
-  chassis.pid_wait();
-
-  if (chassis.interfered) {
-    tug(3);
-    return;
-  }
-
-  chassis.pid_turn_set(90_deg, TURN_SPEED);
-  chassis.pid_wait();
 }
 
 // . . .
 // Make your own autonomous functions here!
 // . . .
 
+void newredsoloawp() {
+  //default configuration + definitions
+  ez::Piston clamp(8);
+  ez::Piston doinker(1);
+  ez::Piston intlift(4);
+  chassis.drive_imu_reset();
+  chassis.drive_sensor_reset();
+  chassis.drive_brake_set(MOTOR_BRAKE_HOLD);
+  ladybrown.set_brake_mode(MOTOR_BRAKE_HOLD);
 
+  while(abs(ldberrorall2)>2) {
+    ldberrorall2 = correctalliancepos2 - ldbcurrentpos2;
+    ladybrown.move(ladyBrownPID2(ldberrorall2, 0.5, 0, 0));
+  }
+
+}
 
 //pos side red nonrush solo awp (2 on mogo 1 on alliance)
 void solo_awp_red() {
@@ -238,9 +154,9 @@ void solo_awp_red() {
   chassis.pid_turn_set(-65, 80);
   chassis.pid_wait_quick_chain();
   pros::delay(200);
-  intake.move(-127);
+  //intake.move(-127);
   pros::delay(500);
-  intake.move(0);
+  //intake.move(0);
 
   // GRAB SAFE MOBILE GOAL
   chassis.pid_turn_set(-50, TURN_SPEED);
@@ -259,7 +175,7 @@ void solo_awp_red() {
   chassis.pid_turn_set(138, TURN_SPEED);
   chassis.pid_wait_quick_chain();
   intlift.set(true);
-  intake.move(-127);
+  //intake.move(-127);
   chassis.pid_drive_set(16.75, DRIVE_SPEED);
   chassis.pid_wait_quick_chain();
   pros::delay(300);
@@ -302,46 +218,51 @@ void solo_awp_blue() {
   chassis.pid_wait_quick_chain();
   chassis.pid_drive_set(1.75, DRIVE_SPEED);
   chassis.pid_wait_quick_chain();
-  chassis.pid_turn_set(56, TURN_SPEED);
+  chassis.pid_turn_set(50, TURN_SPEED);
   chassis.pid_wait_quick_chain();
-  chassis.pid_drive_set(-1.5, DRIVE_SPEED);
+  chassis.pid_drive_set(-2.25, DRIVE_SPEED);
   chassis.pid_wait_quick_chain();
   chassis.pid_turn_set(65, 80);
   chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(-1.375, 80);
+  chassis.pid_wait_quick_chain();
   pros::delay(200);
-  intake.move(-127);
-  pros::delay(500);
-  intake.move(0);
+  //intake.move(-127);
+  pros::delay(450);
+  //intake.move(0);
 
   // GRAB SAFE MOBILE GOAL
-  chassis.pid_turn_set(50, TURN_SPEED);
+  chassis.pid_turn_set(41.5, TURN_SPEED);
   chassis.pid_wait_quick_chain();
   chassis.pid_drive_set(20, DRIVE_SPEED);
   chassis.pid_wait_quick_chain();
   
   chassis.pid_turn_set(-103, TURN_SPEED);
   chassis.pid_wait_quick_chain();
-  chassis.pid_drive_set(-8, DRIVE_SPEED);
+  chassis.pid_drive_set(-12, DRIVE_SPEED);
   chassis.pid_wait_quick_chain();
-  pros::delay(300);
+  pros::delay(250);
   clamp.set(true);
   pros::delay(100);
+  chassis.pid_drive_set(2, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
   
   // SCORE RED RING 2 ON MOBILE GOAL
   chassis.pid_turn_set(-138, TURN_SPEED);
   chassis.pid_wait_quick_chain();
   intlift.set(true);
-  intake.move(-127);
-  chassis.pid_drive_set(16, DRIVE_SPEED);
+  //intake.move(-127);
+  chassis.pid_drive_set(18.25, DRIVE_SPEED);
   chassis.pid_wait_quick_chain();
-  pros::delay(300);
+  pros::delay(450);
   intlift.set(false); 
-  pros::delay(700);
-  chassis.pid_drive_set(-10, 80);
+  pros::delay(450);
+  chassis.pid_drive_set(-15, 100);
   chassis.pid_wait_quick_chain();
 
+  
   // SCORE RED RING 3 ON MOBILE GOAL
-  chassis.pid_turn_set(22, TURN_SPEED);
+  chassis.pid_turn_set(17, TURN_SPEED);
   chassis.pid_wait_quick_chain();
   chassis.pid_drive_set(25, DRIVE_SPEED);
   chassis.pid_wait_quick_chain();
@@ -351,14 +272,14 @@ void solo_awp_blue() {
   pros::delay(350);
   
   // TOUCH BAR
-  chassis.pid_drive_set(-12, DRIVE_SPEED);
+  chassis.pid_drive_set(-17, 80);
   chassis.pid_wait_quick_chain();
   chassis.pid_turn_set(-190, TURN_SPEED);
   chassis.pid_wait_quick_chain();
   chassis.pid_drive_set(19, DRIVE_SPEED);
   chassis.pid_wait_quick_chain();
   chassis.pid_drive_set(6, 90);
-  
+
 }
 
 ///
@@ -388,9 +309,9 @@ void rush_auto_red() {
   chassis.pid_wait_quick_chain();
   pros::delay(100);
   rightdoinker.set(true);
-  chassis.pid_turn_set(5, TURN_SPEED);
+  chassis.pid_turn_set(9, TURN_SPEED);
   chassis.pid_wait_quick_chain();
-  chassis.pid_drive_set(7.5, DRIVE_SPEED);
+  chassis.pid_drive_set(8.375, DRIVE_SPEED);
   pros::delay(600);
   rightdoinker.set(false);
 
@@ -415,9 +336,9 @@ void rush_auto_red() {
   // SCORE PRELOAD ON MOGO 1
   chassis.pid_drive_set(8, DRIVE_SPEED);
   chassis.pid_wait_quick_chain();
-  intake.move(-127);
+  //intake.move(-127);
   pros::delay(400);
-  intake.move(0);
+  //intake.move(0);
   clamp.set(false);
 
   // DRIVE TO AND CLAMP MOGO 2
@@ -425,29 +346,37 @@ void rush_auto_red() {
   chassis.pid_wait_quick_chain();
   chassis.pid_turn_set(160, TURN_SPEED);
   chassis.pid_wait_quick_chain();
-  chassis.pid_drive_set(-27, DRIVE_SPEED);
+  chassis.pid_drive_set(-22, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(-5, DRIVE_SPEED);
   chassis.pid_wait_quick_chain();
   pros::delay(400);
   clamp.set(true);
+  chassis.pid_drive_set(-2.5, 70);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(2.5, 70);
+  chassis.pid_wait_quick_chain();
+
 
   // INTAKE RED RING ONTO MOGO 2
   chassis.pid_turn_set(230, TURN_SPEED);
   intlift.set(true);
   chassis.pid_wait_quick_chain();
-  intake.move(-127);
-  chassis.pid_drive_set(22, DRIVE_SPEED);
+  //intake.move(-127);
+  chassis.pid_drive_set(20, DRIVE_SPEED);
   chassis.pid_wait_quick_chain();
   intlift.set(false);
-  pros::delay(300);
-  chassis.pid_drive_set(-8, DRIVE_SPEED);
+  pros::delay(600);
+  chassis.pid_drive_set(-11, DRIVE_SPEED);
   chassis.pid_wait_quick_chain();
-
+  chassis.drive_brake_set(MOTOR_BRAKE_HOLD);
+  
   // GO TO AUTONOMOUS LINE
   chassis.pid_turn_set(30, TURN_SPEED);
   chassis.pid_wait_quick_chain();
-  chassis.pid_drive_set(25, DRIVE_SPEED);
-  intake.move(0);
-
+  chassis.pid_drive_set(16, DRIVE_SPEED);
+  //intake.move(0);
+  
 }
 
 ///
@@ -504,9 +433,9 @@ void rush_auto_blue() {
   // SCORE PRELOAD ON MOGO 1
   chassis.pid_drive_set(8, DRIVE_SPEED);
   chassis.pid_wait_quick_chain();
-  intake.move(-127);
+  //intake.move(-127);
   pros::delay(400);
-  intake.move(0);
+  //intake.move(0);
   clamp.set(false);
 
   // DRIVE TO AND CLAMP MOGO 2
@@ -514,28 +443,30 @@ void rush_auto_blue() {
   chassis.pid_wait_quick_chain();
   chassis.pid_turn_set(-160, TURN_SPEED);
   chassis.pid_wait_quick_chain();
-  chassis.pid_drive_set(-27, DRIVE_SPEED);
+  chassis.pid_drive_set(-22, DRIVE_SPEED);
   chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(-9, 90);
   pros::delay(400);
   clamp.set(true);
+  chassis.pid_wait_quick_chain();
 
   // INTAKE RED RING ONTO MOGO 2
-  chassis.pid_turn_set(-230, TURN_SPEED);
+  chassis.pid_turn_set(-215, TURN_SPEED);
   intlift.set(true);
   chassis.pid_wait_quick_chain();
-  intake.move(-127);
-  chassis.pid_drive_set(22, DRIVE_SPEED);
+  //intake.move(-127);
+  chassis.pid_drive_set(24, DRIVE_SPEED);
   chassis.pid_wait_quick_chain();
   intlift.set(false);
-  pros::delay(300);
-  chassis.pid_drive_set(-8, DRIVE_SPEED);
+  pros::delay(500);
+  chassis.pid_drive_set(-10, DRIVE_SPEED);
   chassis.pid_wait_quick_chain();
 
   // GO TO AUTONOMOUS LINE
   chassis.pid_turn_set(-30, TURN_SPEED);
   chassis.pid_wait_quick_chain();
-  chassis.pid_drive_set(25, DRIVE_SPEED);
-  intake.move(0);
+  chassis.pid_drive_set(22, DRIVE_SPEED);
+  //intake.move(0);
 
 }
 
@@ -552,50 +483,131 @@ void skills_auto() {
   ladybrown.set_brake_mode(MOTOR_BRAKE_HOLD);
 
   // RED ALLIANCE STAKE
-  intake.move(-127);
+  //intake.move(-127);
   pros::delay(500);
-  intake.move(0);
+  //intake.move(0);
 
   // GRAB MOGO 1
-  chassis.pid_drive_set(7, DRIVE_SPEED);
+  chassis.pid_drive_set(9, DRIVE_SPEED);
   chassis.pid_wait_quick_chain();
   chassis.pid_turn_set(-90, TURN_SPEED);
   chassis.pid_wait_quick_chain();
-  chassis.pid_drive_set(-17, DRIVE_SPEED);
+  chassis.pid_drive_set(-17.75, DRIVE_SPEED);
   pros::delay(500);
   clamp.set(true);
   pros::delay(100);
   
   // FILL MOGO 1
   chassis.pid_wait();
-  chassis.pid_drive_set(-2, DRIVE_SPEED);
+  chassis.pid_drive_set(-2.25, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  pros::delay(250);
+  chassis.pid_turn_set(6, DRIVE_SPEED);
+  chassis.pid_wait();
+  
+  //intake.move(-127);
+  chassis.pid_drive_set(16, DRIVE_SPEED);  
+  chassis.pid_wait_quick_chain();
+  chassis.pid_turn_set(46.5, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(45, DRIVE_SPEED);  
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(-13.75, 100);  
+  chassis.pid_wait_quick_chain();
+  pros::delay(200);
+  chassis.pid_turn_set(175, TURN_SPEED);
+  pros::delay(600);
+  
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(33.5, 75);
+  pros::delay(950);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(7, 75);
+  chassis.pid_wait_quick_chain();
+  pros::delay(300);
+  
+  chassis.pid_drive_set(-3.75, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  pros::delay(250);
+  chassis.pid_turn_set(100, 60);
+  pros::delay(100);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(10, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+
+  // SCORE IN CORNER
+  chassis.pid_turn_set(0, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(-8, DRIVE_SPEED);
+  pros::delay(400);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_turn_set(-20, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  pros::delay(200);
+  //intake.move(0);
+  clamp.set(false);
+
+  // GRAB MOGO 2
+  chassis.pid_drive_set(3, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_turn_set(90, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(-64, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_turn_set(60, TURN_SPEED);
+  chassis.pid_drive_set(-9, 80);
+  pros::delay(400);
+  clamp.set(true);
+  pros::delay(50);
+  chassis.pid_wait();
+
+  //////////////////////////////////
+
+  // FILL MOGO 2 
+  
+  chassis.pid_wait();
+  chassis.pid_drive_set(-1.5, DRIVE_SPEED);
   chassis.pid_wait_quick_chain();
   chassis.pid_turn_set(0, DRIVE_SPEED);
-  intake.move(-127);
+  //intake.move(-127);
   chassis.pid_wait_quick_chain();
   chassis.pid_drive_set(15, DRIVE_SPEED);  
   chassis.pid_wait_quick_chain();
-  chassis.pid_turn_set(52, TURN_SPEED);
+  chassis.pid_turn_set(-52, TURN_SPEED);
   chassis.pid_wait_quick_chain();
   chassis.pid_drive_set(42, DRIVE_SPEED);  
   chassis.pid_wait_quick_chain();
-  chassis.pid_drive_set(-6, 80);  
+  chassis.pid_drive_set(-7.5, 100);  
   chassis.pid_wait_quick_chain();
-  chassis.pid_turn_set(-163.5, TURN_SPEED);
-  chassis.pid_wait_quick_chain();
+  pros::delay(200);
+  chassis.pid_turn_set(163.5, TURN_SPEED);
   pros::delay(300);
+  
+  chassis.pid_wait_quick_chain();
   chassis.pid_drive_set(13, 65);
   chassis.pid_wait_quick_chain();
-  chassis.pid_turn_set(-180, TURN_SPEED);
+  chassis.pid_turn_set(180, TURN_SPEED);
   chassis.pid_wait_quick_chain();
-  chassis.pid_drive_set(37, 35);
+  chassis.pid_drive_set(22, 65);
+  pros::delay(700);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(5.5, 65);
   chassis.pid_wait_quick_chain();
   pros::delay(300);
-  chassis.pid_drive_set(-30, DRIVE_SPEED);
-  chassis.pid_turn_set(52, TURN_SPEED);
+  chassis.pid_drive_set(-3.75, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
+  pros::delay(250);
+  chassis.pid_turn_set(-100, 60);
+  pros::delay(100);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(10, DRIVE_SPEED);
+  chassis.pid_wait_quick_chain();
 
-
-
-
+  // SCORE IN CORNER
+  chassis.pid_turn_set(-180, TURN_SPEED);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(-8, DRIVE_SPEED);
+  pros::delay(400);
+  chassis.pid_wait_quick_chain();
 
 }

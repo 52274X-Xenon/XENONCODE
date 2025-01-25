@@ -9,10 +9,10 @@
 // Chassis constructor
 ez::Drive chassis(
     // These are your drive motors, the first motor is used for sensing!
-    {-8, 9, -10},     // Left Chassis Ports (negative port will reverse it!)
-    {1, -2, 3},  // Right Chassis Ports (negative port will reverse it!)
+    {-8, -9, 10},     // Left Chassis Ports (negative port will reverse it!)
+    {-2, 3, 4},  // Right Chassis Ports (negative port will reverse it!)
 
-    4,      // IMU Port
+    11,      // IMU Port
     3.25 ,  // Wheel Diameter
     450);   // Wheel RPM
 
@@ -24,15 +24,17 @@ ez::Drive chassis(
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
+
+  ldbrotation.reset();
   // Print our branding over your terminal :D
   ez::ez_template_print();
 
   pros::delay(500);  // Stop the user from doing anything while legacy ports configure
 
   // Configure your chassis controls
-  chassis.opcontrol_curve_buttons_toggle(true);  // Enables modifying the controller curve with buttons on the joysticks
+  chassis.opcontrol_curve_buttons_toggle(false);  // Enables modifying the controller curve with buttons on the joysticks
   chassis.opcontrol_drive_activebrake_set(0);    // Sets the active brake kP. We recommend ~2.  0 will disable.
-  chassis.opcontrol_curve_default_set(0, 0);     // Defaults for curve. If using tank, only the first parameter is used. (Comment this line out if you have an SD card!)
+  chassis.opcontrol_curve_default_set(1, 4.6);     // Defaults for curve. If using tank, only the first parameter is used. (Comment this line out if you have an SD card!)
 
   // Set the drive to your own constants from autons.cpp!
   default_constants();
@@ -43,19 +45,15 @@ void initialize() {
 
   // Autonomous Selector using LLEMU
   ez::as::auton_selector.autons_add({
+      Auton("ladybrown red side solo awp", newredsoloawp),
+      Auton("Swing Example\n\nSwing in an 'S' curve", swing_example),
+      Auton("Example Turn\n\nTurn 3 times.", turn_example),
+      Auton("Example Drive\n\nDrive forward and come back.", drive_example),
+      Auton("rush red", rush_auto_red),
       Auton("SKILLS", skills_auto),
+      Auton("rush blue", rush_auto_blue),
       Auton("solo awp blue", solo_awp_blue),
       Auton("solo awp red", solo_awp_red),
-      Auton("rush red", rush_auto_red),
-      Auton("rush blue", rush_auto_blue),
-      Auton("Example Drive\n\nDrive forward and come back.", drive_example),
-      Auton("Example Turn\n\nTurn 3 times.", turn_example),
-      Auton("Drive and Turn\n\nDrive forward, turn, come back. ", drive_and_turn),
-      Auton("Drive and Turn\n\nSlow down during drive.", wait_until_change_speed),
-      Auton("Swing Example\n\nSwing in an 'S' curve", swing_example),
-      Auton("Motion Chaining\n\nDrive forward, turn, and come back, but blend everything together :D", motion_chaining),
-      Auton("Combine all 3 movements", combining_movements),
-      Auton("Interference\n\nAfter driving forward, robot performs differently if interfered or not.", interfered_example),
   });
 
 
@@ -66,9 +64,17 @@ void initialize() {
   master.rumble(".");
 }
 
-
+//////////////////
 // LADY BROWN PID
+//////////////////
 
+  double ldberrorload;
+  double ldberrorall;
+  double ldberrormogo;
+  double ldbcurrentpos;
+  double correctloadpos = 40.00;
+  double correctalliancepos = 161.00;
+  double correctmogopos = 256.00;
   double ladyBrownPID(double error = 0, double kP=-0, double kI=0, double kD=0, double totalError = 0, double prevError = 0, double integralThreshold=30, double maxI=500) {
       // calculate integral
       if (abs(error) < integralThreshold) {
@@ -161,19 +167,18 @@ void opcontrol() {
   ladybrown.set_brake_mode(ladybrown_default_brake);*/
   chassis.drive_brake_set(driver_preference_brake);
 
-//DEFINE PISTONS AND SENSORS + LDB BRAKE MODE AND MORE
-  ez::Piston clamp(8);
-  ez::Piston rightdoinker(6);
-  ez::Piston leftdoinker(5);
-  ez::Piston intlift(7);
-  ez::Piston csortpist(3);
-  pros::Optical csortoptical(11);
-  pros::Rotation ldbrotation(7);
-  ladybrown.set_brake_mode(MOTOR_BRAKE_HOLD); 
-  bool ldbPID = false; // Lady Brown PID is off by default
-  csortoptical.set_led_pwm(100); // Turn on light with 100% intensity
-  double csorthue_val = csortoptical.get_hue(); // variable returns optical sensor's detected hue value
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  //DEFINE PISTONS AND SENSORS + LDB BRAKE MODE AND MORE
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   
+  ladybrown.set_brake_mode(MOTOR_BRAKE_HOLD); // Lady Brown brake mode is HOLD
+  bool ldbPID = false;                        // Lady Brown PID is off by default
+  ez::Piston clamp(8);
+  ez::Piston csortpist(3);
+  ez::Piston doinker(1);
+  ez::Piston intlift(4);
 
 
   while (true) {
@@ -202,52 +207,48 @@ void opcontrol() {
     //chassis.opcontrol_arcade_flipped(ez::SPLIT);    // Flipped split arcade
     // chassis.opcontrol_arcade_flipped(ez::SINGLE);   // Flipped single arcade
 
-    // . . .
-    // Put more user control code here!
-    // . . .
+
+
     
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // LADY BROWN MACRO
-    double ldbcurrentpos = (ldbrotation.get_angle()/100.0); //CENTI DEGREES SO WATCH OUT FOR THE /100
-        double ldbcorrectpos1 = -140; //loading pos if ldb above loading pos
-        double ldbcorrectpos2 = 58 //loading pos if ldb below loadpos1
-        double lberror1 = (ldbcorrectpos1 - ldbcurrentpos); //Finds position that you want to go to based on how much movement
-        double lberror2 = (ldbcorrectpos2 - ldbcurrentpos);
+    
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-        if (master.get_digital_new_press(DIGITAL_DOWN)){
-          ldbPID = true; //Sets PID to true, which activates loop setting macro active
-        } 
-        // experimental start
-      
-        else { 
-            if (master.get_digital(DIGITAL_L1)) {
-              ladybrown.move(127);
-              ldbPID = false;
-            }
-
-            else if (master.get_digital(DIGITAL_L2)) {
-              ladybrown.move(-127);
-              ldbPID = false;
-            }
-
-            else {
-              ladybrown.move(0);
-            }
+    ldbcurrentpos = (ldbrotation.get_angle()/100);
+    ldberrorload = correctloadpos - ldbcurrentpos;
+    ldberrorall = correctalliancepos - ldbcurrentpos;
+      if (master.get_digital_new_press(DIGITAL_DOWN)){
+        ldbPID = true;
+      }
+      else{
+        if (master.get_digital(DIGITAL_L1)){
+          ladybrown.move(127);
+          ldbPID = false;
         }
+      else if (master.get_digital(DIGITAL_L2)){
+          ladybrown.move(-127);
+          ldbPID = false;
+      }
+      else {
+        ladybrown.move(0);
+      }
+      }
+      if (ldbPID == true) {
+        ladybrown.move(ladyBrownPID(ldberrorload, 1, 0, 0));
+      }
+
+      ez::screen_print(std::to_string(ldbcurrentpos));
     
       
-        if ((ldbPID == true) && ldbcurrentpos > 35) { // if ladybrown is above loading position
-          ladybrown.move(ladyBrownPID(lberror1, 0.30, 0, 0.15)); // position, kP, kI, kD
-
-        }
-        else if ((ldbPID == true) && ldbcurrentpos < 35) { // if ladybrown is between zero and loading position
-          ladybrown.move(ladyBrownPID(lberror2, 0.40, 0, 0.15)); // position, kP, kI, kD
-        }
       
-
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
     // INTAKE FUNCTIONS
     
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     if (master.get_digital(DIGITAL_R2)) {
       intake.move(127);
     }
@@ -258,17 +259,60 @@ void opcontrol() {
       intake.move(0);
     }
 
-    // PISTON FUNCTIONS
-    rightdoinker.button_toggle(master.get_digital(DIGITAL_Y));
-    clamp.button_toggle(master.get_digital(DIGITAL_B));
-    leftdoinker.button_toggle(master.get_digital(DIGITAL_RIGHT));
-
-
-    //COLOR SORTER
-    /*if (0.000 < csorthue_val < 30.000) {
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
+    // PISTON FUNCTIONS
+    
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    intlift.button_toggle(master.get_digital(DIGITAL_RIGHT));
+    clamp.button_toggle(master.get_digital(DIGITAL_B));
+    doinker.button_toggle(master.get_digital(DIGITAL_Y));
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    // COLOR SORTER (not operational as of 1/25/24)
+    
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /*csortoptical.set_led_pwm(100);               // Turn on light with 100% intensity
+    int sortingstate = 0;                        // Default sorting state
+    double minhue = 0.00;                        // Minimum hue value
+    double maxhue = 50.00;                       // Maximum hue value
+    double detectedhue = csortoptical.get_hue(); // Variable that returns optical sensor's detected hue value
+
+    if (master.get_digital(DIGITAL_UP)) {
+      sortingstate += 1;
+      if (sortingstate = 3) {
+        sortingstate = 0;
+      }
     }
-    */
+
+    if (sortingstate = 1) {
+      minhue = 0.00;
+      maxhue = 50.00;
+    }
+    else if (sortingstate = 2) {
+      minhue = 210.00;
+      maxhue = 270.00;
+    }
+
+    if ((sortingstate = 0) && (minhue < detectedhue < maxhue)) {
+      csortpist.set(false);
+      pros::delay(50);
+    }
+    else if ((sortingstate = 1) && (minhue < detectedhue < maxhue)) {
+      csortpist.set(true);
+      pros::delay(50);
+    }
+    else if ((sortingstate = 2) && (minhue < detectedhue < maxhue)) {
+      csortpist.set(true);
+      pros::delay(50);
+    }
+    else {
+      csortpist.set(false);
+      pros::delay(50);
+    }*/
 
     pros::delay(ez::util::DELAY_TIME);  // This is used for timer calculations!  Keep this ez::util::DELAY_TIME
   
