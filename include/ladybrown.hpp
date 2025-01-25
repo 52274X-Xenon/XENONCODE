@@ -7,7 +7,7 @@ extern pros::Rotation ldbrotation;
 
 
 
-  double ldbcurrentpos);
+  double ldbcurrentpos;
   double correctloadpos;
   double correctalliancepos;
   double correctmogopos;
