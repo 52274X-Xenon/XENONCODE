@@ -33,45 +33,6 @@ void default_constants() {
   chassis.slew_drive_constants_set(7_in, 80);
 }
 
-  /*double ldbcurrentpos2 = (ldbrotation.get_angle()/100);
-  double correctloadpos2 = 40.00;
-  double correctalliancepos2 = 206.00;
-  double correctmogopos2 = 256.00;
-  double ldberrorload2 = correctloadpos2 - ldbcurrentpos2;
-  double ldberrorall2 = correctalliancepos2 - ldbcurrentpos2;
-  double ldberrormogo2 = correctmogopos2 - ldbcurrentpos2;
-  bool ldbPID = false;
-  double ladyBrownPID2(double error2 = 0, double kP2=-0, double kI2=0, double kD2=0, double totalError2 = 0, double prevError2 = 0, double integralThreshold2=30, double maxI2=500) {
-      // calculate integral
-      if (abs(error2) < integralThreshold2) {
-        totalError2 += error2;
-      }
-
-      if (error2 > 0){
-        totalError2 = std::min(totalError2, maxI2);
-      }
-      else {
-        totalError2 = std::max(totalError2, -maxI2);
-      }
-
-    // calculate derivative
-      float derivative2 = error2 - prevError2;
-      prevError2 = error2;
-
-    // calculate output
-      double speed2 = (error2 * kP2) + (totalError2 * kI2) + (derivative2 * kD2);
-
-      if (speed2 > 127){
-        speed2 = 127;
-      }
-      else if (speed2 < -127){
-        speed2 = -127;
-      }
-
-      return speed2;
-  }
-  */
-
 ///
 // Drive Example
 ///

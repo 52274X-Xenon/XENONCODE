@@ -3,47 +3,58 @@
 
 using namespace pros;
 
+// Initialize global variables
 bool lbPID = false;
 double ladyBrownCorrectPosition = 329.00;
 double ladyBrownCurrentPosition;
 
-double ladyBrownPID(double error, double kP=5, double kI=0, double kD=0, double totalError=0, double prevError=0, double integralThreshold=30, double maxI=500) {
+// Persistent state variables for PID
+double ladyBrownTotalError = 0;
+double ladyBrownPrevError = 0;
+
+double ladyBrownPID(double error, double kP, double kI, double kD, double integralThreshold, double maxI) {
 	// calculate integral
-	if (abs(error) < integralThreshold)
-	{
-		totalError += error;
+	if (abs(error) < integralThreshold) {
+		ladyBrownTotalError += error;
 	}
 
-	if (error > 0){
-		totalError = std::min(totalError, maxI);
+	if (error > 0) {
+		ladyBrownTotalError = std::min(ladyBrownTotalError, maxI);
+	} else {
+		ladyBrownTotalError = std::max(ladyBrownTotalError, -maxI);
 	}
-	else{
-		totalError = std::max(totalError, -maxI);
-	}
 
-    // calculate derivative
-    float derivative = error - prevError;
-    prevError = error;
+	// calculate derivative
+	double derivative = error - ladyBrownPrevError;
+	ladyBrownPrevError = error;
 
-    // calculate output
-    double speed = (error * kP) + (totalError * kI) + (derivative * kD);
+	// calculate output
+	double speed = (error * kP) + (ladyBrownTotalError * kI) + (derivative * kD);
 
-	if (speed > 127){
+	// Clamp the output to motor limits
+	if (speed > 127) {
 		speed = 127;
-	}
-	else if (speed < -127){
+	} else if (speed < -127) {
 		speed = -127;
 	}
 
 	return speed;
 }
 
-void ladyBrownTask(){
-	while(1){
-		ladyBrownCurrentPosition = (ldbrotation.get_angle())/100;
-		double lberror = (ladyBrownCorrectPosition - ladyBrownCurrentPosition);
-		if (lbPID == true){
+void ladyBrownTask() {
+	while (1) {
+		// Update current position
+		ladyBrownCurrentPosition = ldbrotation.get_angle() / 100;
+
+		// Calculate error
+		double lberror = ladyBrownCorrectPosition - ladyBrownCurrentPosition;
+
+		// Apply PID control if enabled
+		if (lbPID) {
 			ladybrown.move(ladyBrownPID(lberror, -3, -0, -0));
 		}
+
+		// Delay to prevent CPU overutilization
+		pros::delay(10);
 	}
 }
