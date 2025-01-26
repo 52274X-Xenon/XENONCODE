@@ -26,6 +26,8 @@ ez::Drive chassis(
 void initialize() {
 
   ldbrotation.reset();
+  pros::Task lbTask(ladyBrownTask);
+
   // Print our branding over your terminal :D
   ez::ez_template_print();
 
@@ -63,47 +65,6 @@ void initialize() {
   ez::as::initialize();
   master.rumble(".");
 }
-
-//////////////////
-// LADY BROWN PID
-//////////////////
-
-  double ldberrorload;
-  double ldberrorall;
-  double ldberrormogo;
-  double ldbcurrentpos;
-  double correctloadpos = 40.00;
-  double correctalliancepos = 161.00;
-  double correctmogopos = 256.00;
-  double ladyBrownPID(double error = 0, double kP=-0, double kI=0, double kD=0, double totalError = 0, double prevError = 0, double integralThreshold=30, double maxI=500) {
-      // calculate integral
-      if (abs(error) < integralThreshold) {
-          totalError += error;
-      }
-
-      if (error > 0){
-          totalError = std::min(totalError, maxI);
-      }
-      else {
-          totalError = std::max(totalError, -maxI);
-      }
-
-    // calculate derivative
-      float derivative = error - prevError;
-      prevError = error;
-
-    // calculate output
-      double speed = (error * kP) + (totalError * kI) + (derivative * kD);
-
-      if (speed > 127){
-          speed = 127;
-      }
-      else if (speed < -127){
-          speed = -127;
-      }
-
-      return speed;
-  }
 
 /**
  * Runs while the robot is in the disabled state of Field Management System or
@@ -216,30 +177,24 @@ void opcontrol() {
     
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ldbcurrentpos = (ldbrotation.get_angle()/100);
-    ldberrorload = correctloadpos - ldbcurrentpos;
-    ldberrorall = correctalliancepos - ldbcurrentpos;
-      if (master.get_digital_new_press(DIGITAL_DOWN)){
-        ldbPID = true;
+    if (master.get_digital_new_press(E_CONTROLLER_DIGITAL_DOWN)){
+      lbPID = true;
+      // ringLoadToggle = !ringLoadToggle;
+    }
+    
+    else{
+      if (master.get_digital(E_CONTROLLER_DIGITAL_L1)){
+        ladybrown.move(127);
+        lbPID = false;
+      }
+      else if (master.get_digital(E_CONTROLLER_DIGITAL_L2)){
+        ladybrown.move(-127);
+        lbPID = false;
       }
       else{
-        if (master.get_digital(DIGITAL_L1)){
-          ladybrown.move(127);
-          ldbPID = false;
-        }
-      else if (master.get_digital(DIGITAL_L2)){
-          ladybrown.move(-127);
-          ldbPID = false;
-      }
-      else {
         ladybrown.move(0);
       }
-      }
-      if (ldbPID == true) {
-        ladybrown.move(ladyBrownPID(ldberrorload, 1, 0, 0));
-      }
-
-      ez::screen_print(std::to_string(ldbcurrentpos));
+    }
     
       
       

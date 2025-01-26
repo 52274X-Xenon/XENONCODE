@@ -1,18 +1,13 @@
 #pragma once
 
-#include "api.h"
+#include "main.h"
 
-extern pros::Motor ladybrown;
-extern pros::Rotation ldbrotation;
+using namespace pros;
 
+bool lbPID;
+double ladyBrownCorrectPosition;
+double ladyBrownCurrentPosition;
 
+double ladyBrownPID(double error, double kP=5, double kI=0, double kD=0, double totalError=0, double prevError=0, double integralThreshold=30, double maxI=500);
 
-  double ldbcurrentpos;
-  double correctloadpos;
-  double correctalliancepos;
-  double correctmogopos;
-  double ldberrorload;
-  double ldberrormogo;
-  double ldberrorall;
-  bool ldbPID;
-  double ladyBrownPID(double error = 0, double kP=-0, double kI=0, double kD=0, double totalError = 0, double prevError = 0, double integralThreshold=30, double maxI=500);
+void ladyBrownTask();
