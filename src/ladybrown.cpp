@@ -3,9 +3,21 @@
 
 using namespace pros;
 
+// Ldb states
+int ladyBrownState = 0;
+
+double ladyBrownMogo = 250;
+double ladyBrownAlliance = 212.00;
+double ladyBrownLoad1st = 35.00;
+double ladyBrownLoad2nd = 45.00;
+double ladyBrownPassive = 3.25;
+//double ladyBrownLoad1 = 48.00;
+//double ladyBrownLoad2 = 36.00;
+
+
 // Initialize global variables
 bool lbPID = false;
-double ladyBrownCorrectPosition = 329.00;
+double ladyBrownCorrectPosition = ladyBrownLoad;
 double ladyBrownCurrentPosition;
 
 // Persistent state variables for PID
@@ -51,7 +63,7 @@ void ladyBrownTask() {
 
 		// Apply PID control if enabled
 		if (lbPID) {
-			ladybrown.move(ladyBrownPID(lberror, -3, -0, -0));
+			ladybrown.move(ladyBrownPID(lberror, 0.75, 0, 0));
 		}
 
 		// Delay to prevent CPU overutilization

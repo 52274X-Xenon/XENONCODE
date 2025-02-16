@@ -4,13 +4,13 @@
 
 extern Drive chassis;
 
-void newredsoloawp();
+void xenon_skills();
+void redsoloawp();
+void rednegativeside();
+void redrushside();
 
-void solo_awp_red();
-void solo_awp_blue();
-void rush_auto_red();
-void rush_auto_blue();
-void skills_auto();
+void bluerushside();
+void bluesoloawp();
 
 void drive_example();
 void turn_example();

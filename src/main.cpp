@@ -9,10 +9,10 @@
 // Chassis constructor
 ez::Drive chassis(
     // These are your drive motors, the first motor is used for sensing!
-    {-8, -9, 10},     // Left Chassis Ports (negative port will reverse it!)
-    {-2, 3, 4},  // Right Chassis Ports (negative port will reverse it!)
+    {-8, -9, 10},     // Left
+    {-2, 3, 4},  // Right
 
-    11,      // IMU Port
+    11,      // IMU
     3.25 ,  // Wheel Diameter
     450);   // Wheel RPM
 
@@ -47,15 +47,15 @@ void initialize() {
 
   // Autonomous Selector using LLEMU
   ez::as::auton_selector.autons_add({
-      Auton("ladybrown red side solo awp", newredsoloawp),
+      Auton("red positive doinker RUSH", redrushside),
+      Auton("red side solo awp", redsoloawp),
+      Auton("blue side solo awp", bluesoloawp),
+      Auton("blue positive doinker RUSH", bluerushside),
+      Auton("red negative (ring) side auton", rednegativeside),
+      Auton("XENON HIGH STAKES SKILLS PROGRAM", xenon_skills),
       Auton("Swing Example\n\nSwing in an 'S' curve", swing_example),
       Auton("Example Turn\n\nTurn 3 times.", turn_example),
       Auton("Example Drive\n\nDrive forward and come back.", drive_example),
-      Auton("rush red", rush_auto_red),
-      Auton("SKILLS", skills_auto),
-      Auton("rush blue", rush_auto_blue),
-      Auton("solo awp blue", solo_awp_blue),
-      Auton("solo awp red", solo_awp_red),
   });
 
 
@@ -136,10 +136,10 @@ void opcontrol() {
   
   ladybrown.set_brake_mode(MOTOR_BRAKE_HOLD); // Lady Brown brake mode is HOLD
   bool ldbPID = false;                        // Lady Brown PID is off by default
-  ez::Piston clamp(8);
-  ez::Piston csortpist(3);
-  ez::Piston doinker(1);
-  ez::Piston intlift(4);
+  //ez::Piston clamp(8);
+  //ez::Piston csortpist(3);
+  //ez::Piston doinker(1);
+  //ez::Piston intlift(4);
 
 
   while (true) {
@@ -177,17 +177,29 @@ void opcontrol() {
     
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    if (master.get_digital_new_press(E_CONTROLLER_DIGITAL_DOWN)){
-      lbPID = true;
-      // ringLoadToggle = !ringLoadToggle;
+    if (master.get_digital(DIGITAL_DOWN)){
+      ladyBrownState += 1;
+
+      if (ladyBrownState = 1) {
+        ladyBrownCorrectPosition = ladyBrownLoad1st;
+        lbPID = true;
+      }
+      else if (ladyBrownState = 2) {
+        ladyBrownCorrectPosition = ladyBrownLoad2nd;
+        lbPID = true;
+      }
+      if (ladyBrownState = 0 || ladyBrownState > 2) {
+        lbPID = false;
+        ladyBrownState = 0;
+      }
     }
     
     else{
-      if (master.get_digital(E_CONTROLLER_DIGITAL_L1)){
+      if (master.get_digital(DIGITAL_L1)){
         ladybrown.move(127);
         lbPID = false;
       }
-      else if (master.get_digital(E_CONTROLLER_DIGITAL_L2)){
+      else if (master.get_digital(DIGITAL_L2)){
         ladybrown.move(-127);
         lbPID = false;
       }
@@ -214,23 +226,30 @@ void opcontrol() {
       intake.move(0);
     }
 
+    if (master.get_digital(DIGITAL_A)) {
+      hooks.move(30);
+      delay(30);
+      hooks.move(0);
+    }
+
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     // PISTON FUNCTIONS
     
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    intlift.button_toggle(master.get_digital(DIGITAL_RIGHT));
-    clamp.button_toggle(master.get_digital(DIGITAL_B));
+    rushmech.button_toggle(master.get_digital(DIGITAL_RIGHT));
+    clamps.button_toggle(master.get_digital(DIGITAL_B));
     doinker.button_toggle(master.get_digital(DIGITAL_Y));
+    intlift.button_toggle(master.get_digital(DIGITAL_LEFT));
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
-    // COLOR SORTER (not operational as of 1/25/24)
+    // COLOR SORTER
     
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    /*csortoptical.set_led_pwm(100);               // Turn on light with 100% intensity
+    csortoptical.set_led_pwm(100);               // Turn on light with 100% intensity
     int sortingstate = 0;                        // Default sorting state
     double minhue = 0.00;                        // Minimum hue value
     double maxhue = 50.00;                       // Maximum hue value
@@ -267,7 +286,7 @@ void opcontrol() {
     else {
       csortpist.set(false);
       pros::delay(50);
-    }*/
+    }
 
     pros::delay(ez::util::DELAY_TIME);  // This is used for timer calculations!  Keep this ez::util::DELAY_TIME
   
