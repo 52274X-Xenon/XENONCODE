@@ -10,6 +10,8 @@ double detectedhue = csortoptical.get_hue(); // Variable that returns optical se
 
 void csort_task() {
     while(1) {
+        double detectedhue = csortoptical.get_hue();
+        
         if (sorting = 1) {
             minhue = 0.00;
             maxhue = 50.00;
